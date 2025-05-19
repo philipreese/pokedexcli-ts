@@ -1,9 +1,9 @@
 import { State } from "./state.js";
 
-export function startREPL(state: State) {
+export async function startREPL(state: State) {
     state.readline.prompt();
 
-    state.readline.on('line', (input) => {
+    state.readline.on('line', async (input) => {
         const words = cleanInput(input);
         if (words.length === 0) {
             state.readline.prompt();
@@ -12,11 +12,15 @@ export function startREPL(state: State) {
 
         const commandWord = words[0];
         if (commandWord in state.commands) {
-            state.commands[commandWord].callback(state);
+            try {
+                await state.commands[commandWord].callback(state);
+            } catch (err) {
+                console.log((err as Error).message);
+            }
         } else {
             console.log(`Unknown command: "${commandWord}". Type "help" for a list of commands.`);
         }
-        
+
         state.readline.prompt();
     }); 
 }
