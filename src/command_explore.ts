@@ -6,10 +6,10 @@ export async function commandExplore(state: State, ...args: string[]) {
         throw new Error("you must provide a location name");
     }
 
-    const locationArea = await state.pokeAPI.fetchLocation(args[0]);
-    console.log(`Exploring ${locationArea.name}...`);
+    const location = await state.pokeAPI.fetchLocation(args[0]);
+    console.log(`Exploring ${location.name}...`);
     console.log("Found Pokemon:");
-    for (const encounter of locationArea.pokemon_encounters) {
+    for (const encounter of location.pokemon_encounters) {
         console.log(` - ${encounter.pokemon.name}`);
     }
 }

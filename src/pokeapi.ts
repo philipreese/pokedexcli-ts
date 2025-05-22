@@ -10,7 +10,7 @@ export class PokeAPI {
 
     async fetchLocations(pageURL?: string): Promise<LocationArea> {
         const url = pageURL ?? `${PokeAPI.baseURL}/location-area`;
-        let cachedResponse = this.cache.get<LocationArea>(url);
+        const cachedResponse = this.cache.get<LocationArea>(url);
         if (cachedResponse) {
             return cachedResponse;
         }
@@ -31,7 +31,7 @@ export class PokeAPI {
 
     async fetchLocation(locationName: string): Promise<Location> {
         const url = `${PokeAPI.baseURL}/location-area/${locationName}`;
-        let cachedResponse = this.cache.get<Location>(url);
+        const cachedResponse = this.cache.get<Location>(url);
         if (cachedResponse) {
             return cachedResponse;
         }
@@ -49,16 +49,34 @@ export class PokeAPI {
             throw new Error(`Error fetching location: ${(error as Error).message}`);
           }
     }
+
+    async fetchPokemon(pokemonName: string): Promise<Pokemon> {
+        const url = `${PokeAPI.baseURL}/pokemon/${pokemonName}`;
+        const cachedResponse = this.cache.get<Pokemon>(url);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+
+            const pokemon: Pokemon = await response.json();
+            this.cache.add(url, pokemon);
+            return pokemon;
+        } catch (error) {
+            throw new Error(`Error fetching pokemon: ${(error as Error).message}`);
+        }
+    }
 }
 
 export type LocationArea = {
     count: number;
     next: string;
     previous?: string;
-    results: {
-        name: string;
-        url: string;
-    }[];
+    results: NamedAPIResource[];
 };
 
 type Location = {
@@ -91,7 +109,6 @@ type Name = {
     language: NamedAPIResource;
 }
   
-  
 type PokemonEncounter = {
     pokemon: NamedAPIResource;
     version_details: VersionEncounterDetail[];
@@ -110,4 +127,96 @@ type Encounter = {
     chance: number;
     method: NamedAPIResource;
 }
+
+export type Pokemon = {
+    id: number;
+    name: string;
+    base_experience: number;
+    height: number;
+    is_default: boolean;
+    order: number;
+    weight: number;
+    abilities: PokemonAbility[];
+    forms: NamedAPIResource[];
+    game_indices: VersionGameIndex[];
+    held_items: PokemonHeldItem[];
+    location_area_encounters: string;
+    moves: PokemonMove[];
+    past_types: PokemonTypePast[];
+    past_abilities: PokemonAbilityPast[];
+    sprites: PokemonSprites;
+    cries: PokemonCries;
+    species: NamedAPIResource;
+    stats: PokemonStat[]
+    types: PokemonType[]
+  }
   
+  type PokemonAbility = {
+    is_hidden: boolean;
+    slot: number;
+    ability: NamedAPIResource;
+  }
+
+  type VersionGameIndex = {
+    game_index: number;
+    version: NamedAPIResource;
+  }
+
+  type PokemonHeldItem = {
+    item: NamedAPIResource;
+    version_details: PokemonHeldItemVersion[];
+  }
+
+  type PokemonHeldItemVersion = {
+    version: NamedAPIResource;
+    rarity: number;
+  }
+
+  type PokemonMove = {
+    move: NamedAPIResource;
+    version_group_details: PokemonMoveVersion[];
+  }
+
+  type PokemonMoveVersion = {
+    move_learn_method: NamedAPIResource;
+    version_group: NamedAPIResource;
+    level_learned_at: number;
+    order: number;
+  }
+
+  type PokemonTypePast = {
+    generation: NamedAPIResource;
+    types: PokemonType[];
+  }
+
+  type PokemonType = {
+    slot: number;
+    type: NamedAPIResource;
+  }
+
+  type PokemonAbilityPast = {
+    generation: NamedAPIResource;
+    abilities: PokemonAbility[];
+  }
+
+  type PokemonSprites = {
+    front_default: string;
+    front_shiny: string;
+    front_female: string;
+    front_shiny_female: string;
+    back_default: string;
+    back_shiny: string;
+    back_female: string;
+    back_shiny_female: string;
+  }
+
+  type PokemonCries = {
+    latest: string;
+    legacy: string;
+  }
+
+  type PokemonStat = {
+    stat: NamedAPIResource;
+    effort: number;
+    base_stat: number;
+  }
