@@ -11,9 +11,11 @@ export async function startREPL(state: State) {
         }
 
         const commandWord = words[0];
+        const args = words.slice(1);
+
         if (commandWord in state.commands) {
             try {
-                await state.commands[commandWord].callback(state);
+                await state.commands[commandWord].callback(state, ...args);
             } catch (err) {
                 console.log((err as Error).message);
             }
